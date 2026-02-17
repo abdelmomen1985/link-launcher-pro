@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-# .env # Removed by Orchids to allow .env files
+.env
 # .env.* # Removed by Orchids to allow .env files
 
 # Editor directories and files
