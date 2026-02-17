@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+# .env # Removed by Orchids to allow .env files
+# .env.* # Removed by Orchids to allow .env files
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +24,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.venv

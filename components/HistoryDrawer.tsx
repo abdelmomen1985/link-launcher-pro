@@ -7,7 +7,7 @@ interface HistoryDrawerProps {
   onClose: () => void;
   history: HistoryItem[];
   onSelect: (item: HistoryItem) => void;
-  onClear: () => void;
+  onClear: () => void | Promise<void>;
 }
 
 export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({ 
