@@ -7,9 +7,9 @@ services:
       docker:
         dockerfile: Dockerfile
     env:
-      - key: TURSO_DATABASE_URL
+      - name: TURSO_DATABASE_URL
         value: "{{ secret.TURSO_DATABASE_URL }}"
-      - key: TURSO_AUTH_TOKEN
+      - name: TURSO_AUTH_TOKEN
         value: "{{ secret.TURSO_AUTH_TOKEN }}"
     ports:
       - port: 8080

@@ -1,8 +1,11 @@
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createClient } from '@libsql/client';
-import { extname } from 'node:path';
+import { extname, join } from 'node:path';
+
+loadEnv();
+loadEnv({ path: join(import.meta.dir, '.env'), override: false });
 
 const dbUrl =
   process.env.TURSO_DATABASE_URL ??

@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Button } from './components/Button';
 import { UrlList } from './components/UrlList';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { ParsedUrl, ToastMessage, HistoryItem } from './types';
 import { extractUrls, decodeSharedUrls, removeDuplicates, sortUrls } from './utils/urlUtils';
-import { clearHistory, createShare, getHistory, resolveShare, saveHistoryEntry } from './utils/api';
+import { clearHistory, createShare, getHistory, resolveShare } from './utils/api';
 import { ExternalLink, Trash2, Share2, Clipboard, AlertTriangle, FileCheck, ArrowDownAZ, Zap, Timer } from 'lucide-react';
 
 export default function App() {
@@ -35,18 +35,6 @@ export default function App() {
     })();
   }, []);
 
-  const saveToHistory = useCallback(async (urls: ParsedUrl[], text: string) => {
-    if (urls.length === 0) return;
-
-    try {
-      const saved = await saveHistoryEntry(urls.map((u) => u.original), text);
-      if (saved) {
-        setHistory((prev) => [saved, ...prev.filter((item) => item.id !== saved.id)].slice(0, 20));
-      }
-    } catch (e) {
-      console.error('History save error', e);
-    }
-  }, []);
 
   useEffect(() => {
     const urls = extractUrls(textInput);
@@ -111,8 +99,6 @@ export default function App() {
       }
     }
 
-    await saveToHistory(targets, textInput);
-
     if (useDelay) {
       await openWithDelay(targets);
     } else {
@@ -168,11 +154,27 @@ export default function App() {
     window.history.pushState('', document.title, window.location.pathname + window.location.search);
   };
 
+  const copyToClipboard = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return copied;
+    }
+  };
+
   const handleShare = async () => {
     const targets = getUrlsToOpen();
     if (targets.length === 0) return;
-
-    await saveToHistory(targets, textInput);
 
     try {
       const id = await createShare(targets.map((u) => u.original));
@@ -180,11 +182,16 @@ export default function App() {
         showToast('error', 'Failed to create share link.');
         return;
       }
+
       const shareUrl = `${window.location.origin}${window.location.pathname}?share=${id}`;
-      await navigator.clipboard.writeText(shareUrl);
-      showToast('success', 'Shareable link copied!');
+      const copied = await copyToClipboard(shareUrl);
+      if (copied) {
+        showToast('success', 'Shareable link copied!');
+      } else {
+        showToast('error', 'Failed to copy link.');
+      }
     } catch {
-      showToast('error', 'Failed to copy link.');
+      showToast('error', 'Failed to create share link.');
     }
   };
 
