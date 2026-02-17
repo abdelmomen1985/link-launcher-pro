@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createClient } from '@libsql/client';
+import { extname } from 'node:path';
 
 const dbUrl = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
@@ -141,7 +142,41 @@ app.get('/api/shares/:id', async (c) => {
   return c.json({ urls });
 });
 
-const port = Number(process.env.API_PORT ?? 8787);
+app.get('*', async (c) => {
+  const reqPath = c.req.path;
+  const normalizedPath = reqPath === '/' ? '/index.html' : reqPath;
+  const filePath = `./dist${normalizedPath}`;
+
+  try {
+    const file = Bun.file(filePath);
+    if (await file.exists()) {
+      const extension = extname(normalizedPath).slice(1);
+      if (extension) {
+        const isHtml = extension === 'html';
+        return new Response(file, {
+          headers: {
+            'Content-Type': file.type || undefined,
+            'Cache-Control': isHtml
+              ? 'no-cache'
+              : 'public, max-age=31536000, immutable',
+          },
+        });
+      }
+      return new Response(file);
+    }
+  } catch {
+    // Fall through to index.html for client-side routes
+  }
+
+  const index = Bun.file('./dist/index.html');
+  if (!(await index.exists())) {
+    return c.text('Build artifacts not found. Run `bun run build` first.', 500);
+  }
+
+  return new Response(index);
+});
+
+const port = Number(process.env.PORT ?? process.env.API_PORT ?? 8787);
 
 Bun.serve({
   port,
