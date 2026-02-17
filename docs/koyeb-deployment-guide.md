@@ -48,20 +48,33 @@ services:
 
 > Important: use `name` (not `key`) for env entries.
 
-## 5) Create secrets in Koyeb
+## 5) Set environment variables via Koyeb Dashboard (recommended)
 
-In your Koyeb project, create secrets with exact names:
+> `koyeb.yaml` env vars only apply when deploying via Koyeb CLI. If you created the service via the **web dashboard**, you must set env vars there directly.
 
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
+1. Go to **Koyeb Dashboard** > your service > **Settings** > **Environment variables**
+2. Click **Add Variable** and add each:
 
-Then redeploy.
+| Name | Type | Value |
+|------|------|-------|
+| `TURSO_DATABASE_URL` | Secret | `libsql://your-db.turso.io` |
+| `TURSO_AUTH_TOKEN` | Secret | your Turso auth token |
+
+3. Click **Save** and **Redeploy**
+
+### Alternative: Create org-level secrets first
+
+1. Go to **Koyeb Dashboard** > **Secrets** (left sidebar)
+2. Create two secrets:
+   - Name: `TURSO_DATABASE_URL` / Value: your libsql URL
+   - Name: `TURSO_AUTH_TOKEN` / Value: your token
+3. Then in your service env vars, reference them as type **Secret** with the matching name
 
 ## 6) Deploy steps
 
-1. Create a new Koyeb servi
-2. Ensure deployment method uses Docker (`koyeb.yaml`/Dockerfile), not buildpacks.
-3. Attach the two secrets above.
+1. Create a new Koyeb service from your GitHub repo.
+2. Select **Dockerfile** as the builder (not buildpacks).
+3. Set env vars as described in step 5.
 4. Deploy.
 
 ## 7) Verify deployment
