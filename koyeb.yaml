@@ -1,0 +1,14 @@
+name: link-launcher-pro
+services:
+  - name: web
+    type: web
+    git:
+      builder: docker
+      docker:
+        dockerfile: Dockerfile
+    ports:
+      - port: 8080
+        protocol: http
+    routes:
+      - path: /
+        port: 8080
